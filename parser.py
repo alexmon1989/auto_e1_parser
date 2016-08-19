@@ -128,7 +128,7 @@ def get_auto_ids():
 
     # Получение id автомобилей в несколько потоков
     pool = ThreadPool(10)
-    pool_results = pool.map(get_ids_from_page, range(1, 50 + 1))
+    pool_results = pool.map(get_ids_from_page, range(1, pages_count + 1))
     pool.close()
     pool.join()
 
