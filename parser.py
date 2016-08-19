@@ -9,6 +9,7 @@ import string
 import log_model
 import automobile_model
 import time
+import http.client
 
 # Url для парсинга
 site_url = 'https://auto.e1.ru'
@@ -70,6 +71,9 @@ def get_phone_number(id_auto):
     except urllib.error.HTTPError as e:
         print('Ошибка {} при парсинге  номера телефона авто с id={}'.format(e.getcode(), id_auto))
         log_model.create(id_auto, 'phone', e.getcode())
+    except http.client.RemoteDisconnected:
+        print('Соединение с сервером утеряно')
+        log_model.create(id_auto, 'phone', 'RemoteDisconnected')
     else:
         # Разбор ответа сервера
         json_response = json.loads(http_response.read().decode("utf-8"))
@@ -123,7 +127,7 @@ def get_auto_ids():
     pages_count = get_pages_count()
 
     # Получение id автомобилей в несколько потоков
-    pool = ThreadPool(20)
+    pool = ThreadPool(10)
     pool_results = pool.map(get_ids_from_page, range(1, 50 + 1))
     pool.close()
     pool.join()
