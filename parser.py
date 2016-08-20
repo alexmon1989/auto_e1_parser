@@ -10,6 +10,7 @@ import log_model
 import automobile_model
 import time
 import http.client
+import sys
 
 # Url для парсинга
 site_url = 'https://auto.e1.ru'
@@ -35,6 +36,8 @@ def get_auto_data(id_auto):
     except urllib.error.HTTPError as e:
         print('Ошибка {} при парсинге данных авто с id={}'.format(e.getcode(), id_auto))
         log_model.create(id_auto, 'props', e.getcode())
+    except:
+        print('Неожиданная ошибка', sys.exc_info()[0])
 
     return data
 
@@ -74,6 +77,8 @@ def get_phone_number(id_auto):
     except http.client.RemoteDisconnected:
         print('Соединение с сервером утеряно')
         log_model.create(id_auto, 'phone', 'RemoteDisconnected')
+    except:
+        print('Неожиданная ошибка', sys.exc_info()[0])
     else:
         # Разбор ответа сервера
         json_response = json.loads(http_response.read().decode("utf-8"))
@@ -118,6 +123,8 @@ def get_ids_from_page(page_num):
             res.append(int(l.attrib.get('href').split('/').pop()))
     except urllib.error.HTTPError as e:
         print('Ошибка {} при парсинге id авто со страницы {}'.format(e.getcode(), page_num))
+    except:
+        print('Неожиданная ошибка', sys.exc_info()[0])
     return res
 
 
