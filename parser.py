@@ -163,7 +163,7 @@ def parse_auto_to_db(auto_id):
 if __name__ == '__main__':
     t1 = time.time()
     ids = get_auto_ids()
-    print('Время на получение списка id, сек.: {}'.format(time.time() - t1))
+    print('Время на получение списка id, элементов: {}, сек.: {}'.format(len(ids), time.time() - t1))
 
     t1 = time.time()
     pool = ThreadPool(10)
