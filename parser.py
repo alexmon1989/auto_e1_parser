@@ -11,12 +11,7 @@ import automobile_model
 import time
 import http.client
 import sys
-
-# Url для парсинга
-site_url = 'https://auto.e1.ru'
-site_url_car = site_url + '/car/used/xxx/xxx/{:d}'
-site_url_phone = site_url + '/offer/json'
-site_url_ids = site_url + '/car/all/?country=1&limit=50&page='
+import configparser
 
 
 def get_auto_data(id_auto):
@@ -128,14 +123,14 @@ def get_ids_from_page(page_num):
     return res
 
 
-def get_auto_ids():
+def get_auto_ids(threads_count=10):
     """Получение идентификаторов автомобилей, которые сейчас есть на сайте"""
     res = []
     pages_count = get_pages_count()
 
     # Получение id автомобилей в несколько потоков
-    pool = ThreadPool(10)
-    pool_results = pool.map(get_ids_from_page, range(1, pages_count + 1))
+    pool = ThreadPool(threads_count)
+    pool_results = pool.map(get_ids_from_page, range(1, 1 + 1))
     pool.close()
     pool.join()
 
@@ -161,17 +156,33 @@ def parse_auto_to_db(auto_id):
 
 
 if __name__ == '__main__':
+    # Загрузка параметров
+    config = configparser.ConfigParser()
+    config.read('settings.ini')
+    site_url = config['URLS']['SiteUrl']
+    site_url_car = site_url + config['URLS']['SiteUriCar']
+    site_url_phone = site_url + config['URLS']['SiteUriPhone']
+    site_url_ids = site_url + config['URLS']['SiteUriIds']
+
+    # Установка Proxy
+    if config['PROXY'].getboolean('UseProxy'):
+        proxy_support = urllib.request.ProxyHandler({
+            'http': config['PROXY']['HTTP_PROXY'],
+            'https': config['PROXY']['HTTPS_PROXY']
+        })
+        opener = urllib.request.build_opener(proxy_support)
+        urllib.request.install_opener(opener)
+
     t1 = time.time()
-    ids = get_auto_ids()
+    ids = get_auto_ids(config['THREADS'].getint('ThreadsCountGetIds'))
     print('Время на получение списка id, элементов: {}, сек.: {}'.format(len(ids), time.time() - t1))
 
     t1 = time.time()
-    pool = ThreadPool(10)
+    pool = ThreadPool(config['THREADS'].getint('ThreadsCountGetResults'))
     results = pool.map(parse_auto_to_db, ids)
     pool.close()
     pool.join()
     print('Время на получение данных и добавление их в БД, сек.: {}'.format(time.time() - t1))
 
-
-    #print(get_auto_data(8059410))
-    #print(get_phone_number(8059410))
+    # print(get_auto_data(8059410))
+    # print(get_phone_number(8059410))

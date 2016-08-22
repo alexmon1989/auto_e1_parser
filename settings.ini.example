@@ -1,0 +1,14 @@
+[URLS]
+SiteUrl = https://auto.e1.ru/
+siteUriCar = car/used/xxx/xxx/{:d}
+siteUriPhone = offer/json
+siteUriIds = car/all/?country=1&limit=50&page=
+
+[THREADS]
+ThreadsCountGetIds = 10
+ThreadsCountGetResults = 10
+
+[PROXY]
+UseProxy = false
+HTTP_PROXY = http://127.0.0.1:80
+HTTPS_PROXY = https://127.0.0.1:80
