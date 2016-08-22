@@ -21,6 +21,15 @@ def get_auto_data(id_auto):
     try:
         r = urllib.request.urlopen(url)
         page = parse(r).getroot()
+        # Производитель, марка
+        auto_model_in_breadcrumbs = page\
+            .find_class('au-breadcrumbs au-breadcrumbs_inner')\
+            .pop()\
+            .find_class('au-breadcrumbs__link')
+        data['model'] = auto_model_in_breadcrumbs.pop().text.strip()
+        data['manufacturer'] = auto_model_in_breadcrumbs.pop().text.strip()
+
+        # Свойства (характеристики)
         characteristics = page.find_class('au-offer-card__tech-item')
         for x in characteristics:
             title = x.find_class('au-offer-card__tech-title').pop().find_class('au-offer-card__tech-txt').pop().text
