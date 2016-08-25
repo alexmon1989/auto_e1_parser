@@ -199,11 +199,14 @@ def parse_auto_to_db(auto_table_data):
         auto_data = get_auto_data(auto_table_data['auto_id'])
         phone_data = get_phone_number(auto_table_data['auto_id'])
         # Запись в коллекцию automobiles данных о характеристиках авто
-        del auto_data['Цена']
+        if auto_data.get('Цена'):
+            del auto_data['Цена']
+        else:
+            print('Отсутствовала цена у авто с id={}'.format(auto_table_data['auto_id']))
         automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
         # Запись цены в коллекцию prices
-        price = auto_table_data['price']
-        price_model.create(price, automobile)
+        if auto_table_data.get('Цена'):
+            price_model.create(auto_table_data['price'], automobile)
 
 
 if __name__ == '__main__':
