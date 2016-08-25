@@ -171,7 +171,7 @@ def get_autos_data_from_table(threads_count=10):
 
     # Получение id автомобилей в несколько потоков
     pool = ThreadPool(threads_count)
-    pool_results = pool.map(get_autos_data_from_table_page, range(1, 3 + 1))
+    pool_results = pool.map(get_autos_data_from_table_page, range(1, pages_count + 1))
     pool.close()
     pool.join()
 

@@ -2,7 +2,7 @@
 SiteUrl = https://auto.e1.ru/
 siteUriCar = car/used/xxx/xxx/{:d}
 siteUriPhone = offer/json
-siteUriIds = car/all/?country=1&limit=50&page=
+siteUriIds = car/all/?country=1&page=
 
 [THREADS]
 ThreadsCountGetIds = 10
