@@ -1,15 +1,15 @@
 import pymongo
 import pymongo.errors
-import time
+import datetime
 
 connection = pymongo.MongoClient()
 collection = connection.e1_automobiles.automobiles
 
 
 def create(e1_id, seller, props):
-    time_create = time.strftime('%Y-%m-%d %H:%M:%S')
+    time_create = datetime.datetime.now()
     try:
-        collection.insert({
+        return collection.insert({
             'e1_id': e1_id,
             'seller': seller,
             'props': props,
