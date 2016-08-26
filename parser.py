@@ -12,6 +12,7 @@ import time
 import http.client
 import sys
 import configparser
+import os.path
 
 
 def get_auto_data(id_auto):
@@ -214,7 +215,7 @@ def parse_auto_to_db(auto_table_data):
 if __name__ == '__main__':
     # Загрузка параметров
     config = configparser.ConfigParser()
-    config.read('settings.ini')
+    config.read(os.path.join(os.path.dirname(__file__), 'settings.ini'))
     site_url = config['URLS']['SiteUrl']
     site_url_car = site_url + config['URLS']['SiteUriCar']
     site_url_phone = site_url + config['URLS']['SiteUriPhone']
