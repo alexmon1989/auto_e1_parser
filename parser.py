@@ -1,6 +1,5 @@
 import urllib.request
 import urllib.error
-from lxml.html import parse
 from lxml.html import fromstring
 import json
 from multiprocessing.dummy import Pool as ThreadPool
@@ -26,24 +25,23 @@ def get_auto_data(id_auto):
         cookie_val = 'ngs_ttq=u:38a2bf169e503bd7667a7e8f30088b24; ngs_uid=w127Cle8DwUFKE5nAyQ/Ag==; ' \
                      'isMobile=false; feature_new_card=disabled'
         req.add_header('Cookie', cookie_val)
-        r = urllib.request.urlopen(req)
+        result_html = urllib.request.urlopen(req).read()
     except urllib.error.HTTPError as e:
         print('Ошибка {} при парсинге данных авто с id={}'.format(e.getcode(), id_auto))
         log_model.create(id_auto, 'props', e.getcode())
     except:
         print('Неожиданная ошибка', sys.exc_info()[0])
     else:
-        page = parse(r).getroot()
+        parsed_html = fromstring(result_html)
         # Производитель, марка
-        auto_model_in_breadcrumbs = page \
-            .find_class('au-breadcrumbs au-breadcrumbs_inner') \
+        auto_model_in_breadcrumbs = parsed_html.find_class('au-breadcrumbs au-breadcrumbs_inner') \
             .pop() \
             .find_class('au-breadcrumbs__link')
         data['model'] = auto_model_in_breadcrumbs.pop().text.strip()
         data['manufacturer'] = auto_model_in_breadcrumbs.pop().text.strip()
 
         # Свойства (характеристики)
-        characteristics = page.find_class('au-offer-card__tech-item')
+        characteristics = parsed_html.find_class('au-offer-card__tech-item')
         for x in characteristics:
             title = x.find_class('au-offer-card__tech-title').pop().find_class('au-offer-card__tech-txt').pop().text
             value = x.find_class('au-offer-card__tech-value').pop().find_class('au-offer-card__tech-txt').pop()
@@ -119,8 +117,12 @@ def get_phone_number(id_auto):
 
 def get_pages_count():
     """Получение количества страниц с автомобилями"""
-    r = urllib.request.urlopen(site_url_ids)
-    pages_count = int(parse(r).getroot().find_class('au-pagination__list').pop().findall('li').pop().find('a').text)
+    result_html = urllib.request.urlopen(site_url_ids).read()
+    pages_count = int(fromstring(result_html)
+                      .find_class('au-pagination__list')
+                      .pop().findall('li')
+                      .pop().find('a')
+                      .text)
     return pages_count
 
 
@@ -141,21 +143,21 @@ def get_autos_data_from_table_page(page_num):
                      '%3Bs%3A5%3A%22price%22%3BN%3Bs%3A11%3A%22views_total%22%3BN%3B%7D%7D;'
         req.add_header('Cookie', cookie_val)
 
-        r = urllib.request.urlopen(req)
-        page = parse(r).getroot()
-        tr = page.find_class('au-elements__item')
+        result_html = urllib.request.urlopen(req).read()
+        parsed_html = fromstring(result_html)
+        tr = parsed_html.find_class('au-elements__item')
         for x in tr:
             auto_id = int(x.find_class('au-elements__title__link_table')
-                                  .pop()
-                                  .attrib
-                                  .get('href')
-                                  .split('/')
-                                  .pop())
+                          .pop()
+                          .attrib
+                          .get('href')
+                          .split('/')
+                          .pop())
             price = int(x.find_class('au-elements__section-price__cost')
-                                .pop()
-                                .text
-                                .strip()
-                                .replace(u'\xa0', ''))
+                        .pop()
+                        .text
+                        .strip()
+                        .replace(u'\xa0', ''))
             res.append({'auto_id': auto_id, 'price': price})
     except urllib.error.HTTPError as e:
         print('Ошибка {} при парсинге id авто со страницы {}'.format(e.getcode(), page_num))
