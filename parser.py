@@ -186,11 +186,6 @@ def get_autos_data_from_table(threads_count=10):
 
 def parse_auto_to_db(auto_table_data):
     """Получение данных по автомобилю и добавление их в БД"""
-    #pool = ThreadPool(2)
-    #results = pool.map(lambda f: f(auto_id), [get_auto_data, get_phone_number])
-    #pool.close()
-    #pool.join()
-
     automobile = automobile_model.get_by_e1_id(auto_table_data['auto_id'])
     if automobile:
         # Поиск последней цены и сравнение её с текущей (если не совпадает, то добавление её в БД)
@@ -200,16 +195,17 @@ def parse_auto_to_db(auto_table_data):
     else:
         # Иначе - создать запись
         auto_data = get_auto_data(auto_table_data['auto_id'])
-        phone_data = get_phone_number(auto_table_data['auto_id'])
-        # Запись в коллекцию automobiles данных о характеристиках авто
-        if auto_data.get('Цена'):
-            del auto_data['Цена']
-        else:
-            print('Отсутствовала цена у авто с id={}'.format(auto_table_data['auto_id']))
-        automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
-        # Запись цены в коллекцию prices
-        if auto_table_data.get('Цена'):
-            price_model.create(auto_table_data['price'], automobile)
+        if auto_data:
+            phone_data = get_phone_number(auto_table_data['auto_id'])
+            # Запись в коллекцию automobiles данных о характеристиках авто
+            if auto_data.get('Цена'):
+                del auto_data['Цена']
+            else:
+                print('Отсутствовала цена у авто с id={}'.format(auto_table_data['auto_id']))
+            automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
+            # Запись цены в коллекцию prices
+            if auto_table_data.get('Цена'):
+                price_model.create(auto_table_data['price'], automobile)
 
 
 if __name__ == '__main__':
@@ -241,5 +237,5 @@ if __name__ == '__main__':
     pool.join()
     print('Время на получение данных и добавление их в БД, сек.: {}'.format(time.time() - t1))
 
-    # print(get_auto_data(7987700))
+    # print(get_auto_data(8064468))
     # print(get_phone_number(8059410))
