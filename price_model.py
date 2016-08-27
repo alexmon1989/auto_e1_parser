@@ -19,3 +19,4 @@ def get_last_auto_price(automobile_id):
     price = collection.find_one({'automobile': automobile_id}, {'value': 1}, sort=[("created_at", -1)])
     if price:
         return price['value']
+    return None

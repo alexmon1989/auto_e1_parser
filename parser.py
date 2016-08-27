@@ -190,7 +190,7 @@ def parse_auto_to_db(auto_table_data):
     if automobile:
         # Поиск последней цены и сравнение её с текущей (если не совпадает, то добавление её в БД)
         last_price = price_model.get_last_auto_price(automobile['_id'])
-        if last_price != auto_table_data['price']:
+        if last_price is None or last_price != auto_table_data['price']:
             price_model.create(last_price, automobile['_id'])
     else:
         # Иначе - создать запись
@@ -204,7 +204,7 @@ def parse_auto_to_db(auto_table_data):
                 print('Отсутствовала цена у авто с id={}'.format(auto_table_data['auto_id']))
             automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
             # Запись цены в коллекцию prices
-            if auto_table_data.get('Цена'):
+            if auto_table_data.get('price'):
                 price_model.create(auto_table_data['price'], automobile)
 
 
