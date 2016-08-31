@@ -174,7 +174,7 @@ def get_autos_data_from_table(threads_count=10):
 
     # Получение id автомобилей в несколько потоков
     pool = ThreadPool(threads_count)
-    pool_results = pool.map(get_autos_data_from_table_page, range(1, pages_count + 1))
+    pool_results = pool.map(get_autos_data_from_table_page, range(1, 1 + 1))
     pool.close()
     pool.join()
 
@@ -191,7 +191,7 @@ def parse_auto_to_db(auto_table_data):
         # Поиск последней цены и сравнение её с текущей (если не совпадает, то добавление её в БД)
         last_price = price_model.get_last_auto_price(automobile['_id'])
         if last_price is None or last_price != auto_table_data['price']:
-            price_model.create(last_price, automobile['_id'])
+            price_model.create(auto_table_data['price'], automobile['_id'])
     else:
         # Иначе - создать запись
         auto_data = get_auto_data(auto_table_data['auto_id'])
