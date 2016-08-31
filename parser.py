@@ -167,14 +167,15 @@ def get_autos_data_from_table_page(page_num):
     return res
 
 
-def get_autos_data_from_table(threads_count=10):
+def get_autos_data_from_table(threads_count=10, all_pages=True, pages_count=1):
     """Получение идентификаторов автомобилей, которые сейчас есть на сайте"""
     res = []
-    pages_count = get_pages_count()
+    if all_pages:
+        pages_count = get_pages_count()
 
-    # Получение id автомобилей в несколько потоков
+    # Получение данных автомобилей (id, цена) в несколько потоков
     pool = ThreadPool(threads_count)
-    pool_results = pool.map(get_autos_data_from_table_page, range(1, 1 + 1))
+    pool_results = pool.map(get_autos_data_from_table_page, range(1, pages_count + 1))
     pool.close()
     pool.join()
 
