@@ -214,11 +214,6 @@ def parse_auto_to_db(auto_table_data):
             # Запись в коллекцию automobiles данных о характеристиках авто
             if auto_data.get('Цена'):
                 del auto_data['Цена']
-            else:
-                print('{}: Отсутствовала цена у авто с id={}'.format(
-                    datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
-                    auto_table_data['auto_id']
-                ))
             automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
             # Запись цены в коллекцию prices
             if auto_table_data.get('price'):
@@ -244,7 +239,10 @@ if __name__ == '__main__':
         urllib.request.install_opener(opener)
 
     t1 = time.time()
-    autos_data_from_table = get_autos_data_from_table(config['THREADS'].getint('ThreadsCountGetIds'), all_pages=True)
+    autos_data_from_table = get_autos_data_from_table(
+        config['THREADS'].getint('ThreadsCountGetIds'),
+        all_pages=True
+    )
     print('{}: Время на получение списка id и цен, элементов: {}, сек.: {}'.format(
         datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
         len(autos_data_from_table),
