@@ -13,6 +13,7 @@ import http.client
 import sys
 import configparser
 import os.path
+from datetime import datetime
 
 
 def get_auto_data(id_auto):
@@ -28,7 +29,11 @@ def get_auto_data(id_auto):
         req.add_header('Cookie', cookie_val)
         result_html = urllib.request.urlopen(req).read()
     except urllib.error.HTTPError as e:
-        print('Ошибка {} при парсинге данных авто с id={}'.format(e.getcode(), id_auto))
+        print('{}: Ошибка {} при парсинге данных авто с id={}'.format(
+            datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+            e.getcode(),
+            id_auto
+        ))
         log_model.create(id_auto, 'props', e.getcode())
     except:
         print('Неожиданная ошибка', sys.exc_info()[0])
@@ -83,13 +88,17 @@ def get_phone_number(id_auto):
     try:
         http_response = urllib.request.urlopen(req, json_data_as_bytes)
     except urllib.error.HTTPError as e:
-        print('Ошибка {} при парсинге  номера телефона авто с id={}'.format(e.getcode(), id_auto))
+        print('{}: Ошибка {} при парсинге  номера телефона авто с id={}'.format(
+            datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+            e.getcode(),
+            id_auto
+        ))
         log_model.create(id_auto, 'phone', e.getcode())
     except http.client.RemoteDisconnected:
-        print('Соединение с сервером утеряно')
+        print('{}: Соединение с сервером утеряно'.format(datetime.now().strftime('%d.%m.%Y %H:%M:%S')))
         log_model.create(id_auto, 'phone', 'RemoteDisconnected')
     except:
-        print('Неожиданная ошибка', sys.exc_info()[0])
+        print('{}: Неожиданная ошибка'.format(datetime.now().strftime('%d.%m.%Y %H:%M:%S')), sys.exc_info()[0])
     else:
         # Разбор ответа сервера
         json_response = json.loads(http_response.read().decode("utf-8"))
@@ -161,9 +170,13 @@ def get_autos_data_from_table_page(page_num):
                         .replace(u'\xa0', ''))
             res.append({'auto_id': auto_id, 'price': price})
     except urllib.error.HTTPError as e:
-        print('Ошибка {} при парсинге id авто со страницы {}'.format(e.getcode(), page_num))
+        print('{}: Ошибка {} при парсинге id авто со страницы {}'.format(
+            datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+            e.getcode(),
+            page_num
+        ))
     except:
-        print('Неожиданная ошибка', sys.exc_info()[0])
+        print('{}: Неожиданная ошибка'.format(datetime.now().strftime('%d.%m.%Y %H:%M:%S')), sys.exc_info()[0])
     return res
 
 
@@ -202,7 +215,10 @@ def parse_auto_to_db(auto_table_data):
             if auto_data.get('Цена'):
                 del auto_data['Цена']
             else:
-                print('Отсутствовала цена у авто с id={}'.format(auto_table_data['auto_id']))
+                print('{}: Отсутствовала цена у авто с id={}'.format(
+                    datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+                    auto_table_data['auto_id']
+                ))
             automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
             # Запись цены в коллекцию prices
             if auto_table_data.get('price'):
@@ -228,15 +244,22 @@ if __name__ == '__main__':
         urllib.request.install_opener(opener)
 
     t1 = time.time()
-    autos_data_from_table = get_autos_data_from_table(config['THREADS'].getint('ThreadsCountGetIds'))
-    print('Время на получение списка id и цен, элементов: {}, сек.: {}'.format(len(autos_data_from_table), time.time() - t1))
+    autos_data_from_table = get_autos_data_from_table(config['THREADS'].getint('ThreadsCountGetIds'), all_pages=True)
+    print('{}: Время на получение списка id и цен, элементов: {}, сек.: {}'.format(
+        datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+        len(autos_data_from_table),
+        time.time() - t1
+    ))
 
     t1 = time.time()
     pool = ThreadPool(config['THREADS'].getint('ThreadsCountGetResults'))
     results = pool.map(parse_auto_to_db, autos_data_from_table)
     pool.close()
     pool.join()
-    print('Время на получение данных и добавление их в БД, сек.: {}'.format(time.time() - t1))
+    print('{}: Время на получение данных и добавление их в БД, сек.: {}'.format(
+        datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
+        time.time() - t1
+    ))
 
     # print(get_auto_data(8064468))
     # print(get_phone_number(8059410))
