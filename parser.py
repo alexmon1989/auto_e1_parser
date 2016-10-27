@@ -5,15 +5,16 @@ import json
 from multiprocessing.dummy import Pool as ThreadPool
 import random
 import string
-import log_model
-import automobile_model
-import price_model
 import time
 import http.client
 import sys
 import configparser
 import os.path
 from datetime import datetime
+import log_model
+import automobile_model
+import price_model
+import cheapened_auto_model
 
 
 def get_auto_data(id_auto):
@@ -212,6 +213,8 @@ def parse_auto_to_db(auto_table_data):
         last_price = price_model.get_last_auto_price(automobile['_id'])
         if last_price is None or last_price != auto_table_data['price']:
             price_model.create(auto_table_data['price'], auto_table_data['mileage'], automobile['_id'])
+        if last_price is not None and last_price > auto_table_data['price']:
+            cheapened_auto_model.create(automobile['_id'], last_price - auto_table_data['price'])
     else:
         # Иначе - создать запись
         auto_data = get_auto_data(auto_table_data['auto_id'])
