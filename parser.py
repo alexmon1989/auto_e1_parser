@@ -168,7 +168,11 @@ def get_autos_data_from_table_page(page_num):
                         .text
                         .strip()
                         .replace(u'\xa0', ''))
-            res.append({'auto_id': auto_id, 'price': price})
+            try:
+                mileage = x.find_class('au-elements__section-mileage').pop().find('span').text.replace(u'\xa0', '')
+            except AttributeError:
+                mileage = 'нет данных'
+            res.append({'auto_id': auto_id, 'price': price, 'mileage': mileage})
     except urllib.error.HTTPError as e:
         print('{}: Ошибка {} при парсинге id авто со страницы {}'.format(
             datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
@@ -176,7 +180,9 @@ def get_autos_data_from_table_page(page_num):
             page_num
         ))
     except:
-        print('{}: Неожиданная ошибка'.format(datetime.now().strftime('%d.%m.%Y %H:%M:%S')), sys.exc_info()[0])
+        print('{}: Неожиданная ошибка при получении данных со страницы № {} с таблицей автомобилей'.format(
+            datetime.now().strftime('%d.%m.%Y %H:%M:%S'), page_num), sys.exc_info()[0]
+        )
     return res
 
 
@@ -205,7 +211,7 @@ def parse_auto_to_db(auto_table_data):
         # Поиск последней цены и сравнение её с текущей (если не совпадает, то добавление её в БД)
         last_price = price_model.get_last_auto_price(automobile['_id'])
         if last_price is None or last_price != auto_table_data['price']:
-            price_model.create(auto_table_data['price'], automobile['_id'])
+            price_model.create(auto_table_data['price'], auto_table_data['mileage'], automobile['_id'])
     else:
         # Иначе - создать запись
         auto_data = get_auto_data(auto_table_data['auto_id'])
@@ -217,7 +223,7 @@ def parse_auto_to_db(auto_table_data):
             automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
             # Запись цены в коллекцию prices
             if auto_table_data.get('price'):
-                price_model.create(auto_table_data['price'], automobile)
+                price_model.create(auto_table_data['price'], auto_table_data['mileage'], automobile)
 
 
 if __name__ == '__main__':

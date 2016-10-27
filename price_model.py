@@ -5,10 +5,17 @@ connection = pymongo.MongoClient()
 collection = connection.e1_automobiles.prices
 
 
-def create(value, automobile_id):
+def create(value, mileage, automobile_id):
+    """Создаёт запись в коллекции prices
+
+    :param value: Значение цены
+    :param mileage: Значение пробега
+    :param automobile_id: id автомобиля
+    """
     time_create = datetime.datetime.now()
     collection.insert({
         'value': value,
+        'mileage': mileage,
         'automobile': automobile_id,
         'created_at': time_create,
         'updated_at': time_create
