@@ -214,6 +214,10 @@ def parse_auto_to_db(auto_table_data):
         if last_price is None or last_price != auto_table_data['price']:
             price_model.create(auto_table_data['price'], auto_table_data['mileage'], automobile['_id'])
         if last_price is not None and last_price > auto_table_data['price']:
+            try:
+                automobile['props']['year'] = int(automobile['props']['Год выпуска'])
+            except ValueError:
+                automobile['props']['year'] = automobile['props']['Год выпуска'].replace('новый', '').strip()
             cheapened_auto_model.create(automobile, last_price - auto_table_data['price'])
     else:
         # Иначе - создать запись
