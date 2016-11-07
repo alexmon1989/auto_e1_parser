@@ -26,3 +26,9 @@ def get_by_e1_id(e1_id):
         return auto[0]
     return None
 
+
+def get_by_id(automobile_id):
+    auto = collection.find({'_id': automobile_id})
+    if auto.count() > 0:
+        return auto[0]
+    return None

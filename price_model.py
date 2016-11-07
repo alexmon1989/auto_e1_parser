@@ -5,7 +5,7 @@ connection = pymongo.MongoClient()
 collection = connection.e1_automobiles.prices
 
 
-def create(value, mileage, automobile_id):
+def create(value, mileage, automobile_id, automobile_props):
     """Создаёт запись в коллекции prices
 
     :param value: Значение цены
@@ -17,6 +17,7 @@ def create(value, mileage, automobile_id):
         'value': value,
         'mileage': mileage,
         'automobile': automobile_id,
+        'automobile_props': automobile_props,
         'created_at': time_create,
         'updated_at': time_create
     })

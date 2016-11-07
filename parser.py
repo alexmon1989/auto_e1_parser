@@ -212,7 +212,17 @@ def parse_auto_to_db(auto_table_data):
         # Поиск последней цены и сравнение её с текущей (если не совпадает, то добавление её в БД)
         last_price = price_model.get_last_auto_price(automobile['_id'])
         if last_price is None or last_price != auto_table_data['price']:
-            price_model.create(auto_table_data['price'], auto_table_data['mileage'], automobile['_id'])
+            # Некоторые характеристики авто для дальнейших рассылок по E-Mail
+            automobile_props = {
+                'manufacturer': automobile['props']['manufacturer'],
+                'model': automobile['props']['model'],
+                'year': automobile['props']['Год выпуска'],
+                'transmission': automobile['props'].get('КПП')
+            }
+            price_model.create(auto_table_data['price'],
+                               auto_table_data['mileage'],
+                               automobile['_id'],
+                               automobile_props)
         if last_price is not None and last_price > auto_table_data['price']:
             try:
                 automobile['props']['year'] = int(automobile['props']['Год выпуска'])
@@ -227,10 +237,20 @@ def parse_auto_to_db(auto_table_data):
             # Запись в коллекцию automobiles данных о характеристиках авто
             if auto_data.get('Цена'):
                 del auto_data['Цена']
-            automobile = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
+            automobile_id = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
+            automobile = automobile_model.get_by_id(automobile_id)
+            automobile_props = {
+                'manufacturer': automobile['props']['manufacturer'],
+                'model': automobile['props']['model'],
+                'year': automobile['props']['Год выпуска'],
+                'transmission': automobile['props'].get('КПП')
+            }
             # Запись цены в коллекцию prices
             if auto_table_data.get('price'):
-                price_model.create(auto_table_data['price'], auto_table_data['mileage'], automobile)
+                price_model.create(auto_table_data['price'],
+                                   auto_table_data['mileage'],
+                                   automobile_id,
+                                   automobile_props)
 
 
 if __name__ == '__main__':
