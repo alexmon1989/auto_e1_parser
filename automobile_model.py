@@ -1,8 +1,7 @@
-import pymongo
 import pymongo.errors
 import datetime
+from connection import connection
 
-connection = pymongo.MongoClient()
 collection = connection.e1_automobiles.automobiles
 
 

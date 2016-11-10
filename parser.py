@@ -3,6 +3,7 @@ import urllib.error
 from lxml.html import fromstring
 import json
 from multiprocessing.dummy import Pool as ThreadPool
+import pymongo
 import random
 import string
 import time

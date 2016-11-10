@@ -12,3 +12,7 @@ ThreadsCountGetResults = 10
 UseProxy = false
 HTTP_PROXY = http://127.0.0.1:80
 HTTPS_PROXY = https://127.0.0.1:80
+
+[DB]
+Host = 127.0.0.1
+Port = 27017
