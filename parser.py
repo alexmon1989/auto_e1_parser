@@ -121,6 +121,13 @@ def get_phone_number(id_auto):
                                 result['name'] = x.text
 
                 result['phone'] = parsed_html.find_class('au-offer-card__contacts-phone-txt').pop().text
+                # Очистка телефона от "лишних" символов
+                result['phone'] = result['phone'].replace('+8', '')\
+                    .replace('+7', '')\
+                    .replace('-', '')\
+                    .replace('(', '')\
+                    .replace(')', '')\
+                    .replace(' ', '')
             except IndexError:
                 pass
 
