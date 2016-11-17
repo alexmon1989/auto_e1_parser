@@ -55,7 +55,10 @@ def get_auto_data(id_auto):
             value = x.find_class('au-offer-card__tech-value').pop().find_class('au-offer-card__tech-txt').pop()
             if value.text is None:
                 value = value.find('strong')
-            data[title] = value.text
+            try:
+                data[title] = value.text
+            except AttributeError:
+                data[title] = ''
 
     return data
 
