@@ -107,33 +107,17 @@ def get_phone_number(id_auto):
     else:
         # Разбор ответа сервера
         json_response = json.loads(http_response.read().decode("utf-8"))
-        result_html = json_response.get('result')
-
-        if len(result_html) > 0:
-            parsed_html = fromstring(result_html)
+        result_dict = json_response.get('result').get('offer')
+        # Телефон
+        result['phone'] = result_dict['contacts']['phones']['value'][0]['number']
+        # Имя
+        result['name'] = result_dict['contacts']['phones']['value'][0]['comment']
+        # Автосалон
+        if result_dict.get('firm'):
             try:
-                name_tag = parsed_html.find_class('au-offer-card__contacts-phone-notice')
-                if name_tag:
-                    result['name'] = name_tag.pop().attrib.get('title')
-                else:
-                    # Проверка названия автосалона
-                    auto_store_tag = parsed_html.find_class('au-offer-card__contacts-txt')
-                    if auto_store_tag:
-                        for x in auto_store_tag:
-                            if x.tag == 'strong':
-                                result['name'] = x.text
-
-                result['phone'] = parsed_html.find_class('au-offer-card__contacts-phone-txt').pop().text
-                # Очистка телефона от "лишних" символов
-                result['phone'] = result['phone'].replace('+8', '')\
-                    .replace('+7', '')\
-                    .replace('-', '')\
-                    .replace('(', '')\
-                    .replace(')', '')\
-                    .replace(' ', '')
-            except IndexError:
+                result['name'] = result_dict['firm']['title']['value']
+            except KeyError:
                 pass
-
     return result
 
 
