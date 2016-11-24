@@ -107,17 +107,20 @@ def get_phone_number(id_auto):
     else:
         # Разбор ответа сервера
         json_response = json.loads(http_response.read().decode("utf-8"))
-        result_dict = json_response.get('result').get('offer')
-        # Телефон
-        result['phone'] = result_dict['contacts']['phones']['value'][0]['number']
-        # Имя
-        result['name'] = result_dict['contacts']['phones']['value'][0]['comment']
-        # Автосалон
-        if result_dict.get('firm'):
-            try:
-                result['name'] = result_dict['firm']['title']['value']
-            except KeyError:
-                pass
+        try:
+            result_dict = json_response.get('result').get('offer')
+            # Телефон
+            result['phone'] = result_dict['contacts']['phones']['value'][0]['number']
+            # Имя
+            result['name'] = result_dict['contacts']['phones']['value'][0]['comment']
+            # Автосалон
+            if result_dict.get('firm'):
+                try:
+                    result['name'] = result_dict['firm']['title']['value']
+                except KeyError:
+                    pass
+        except AttributeError:
+            print(id_auto, json_response)
     return result
 
 
