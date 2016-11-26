@@ -236,19 +236,21 @@ def parse_auto_to_db(auto_table_data):
             if auto_data.get('Цена'):
                 del auto_data['Цена']
             automobile_id = automobile_model.create(auto_table_data['auto_id'], phone_data, auto_data)
-            automobile = automobile_model.get_by_id(automobile_id)
-            automobile_props = {
-                'manufacturer': automobile['props']['manufacturer'],
-                'model': automobile['props']['model'],
-                'year': automobile['props']['Год выпуска'],
-                'transmission': automobile['props'].get('КПП')
-            }
-            # Запись цены в коллекцию prices
-            if auto_table_data.get('price'):
-                price_model.create(auto_table_data['price'],
-                                   auto_table_data['mileage'],
-                                   automobile_id,
-                                   automobile_props)
+            # Если запись создалась (т.к. может быть pymongo.errors.DuplicateKeyError)
+            if automobile_id:
+                automobile = automobile_model.get_by_id(automobile_id)
+                automobile_props = {
+                    'manufacturer': automobile['props']['manufacturer'],
+                    'model': automobile['props']['model'],
+                    'year': automobile['props']['Год выпуска'],
+                    'transmission': automobile['props'].get('КПП')
+                }
+                # Запись цены в коллекцию prices
+                if auto_table_data.get('price'):
+                    price_model.create(auto_table_data['price'],
+                                       auto_table_data['mileage'],
+                                       automobile_id,
+                                       automobile_props)
 
 
 if __name__ == '__main__':
