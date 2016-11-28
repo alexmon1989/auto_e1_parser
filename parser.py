@@ -111,6 +111,14 @@ def get_phone_number(id_auto):
             result_dict = json_response.get('result').get('offer')
             # Телефон
             result['phone'] = result_dict['contacts']['phones']['value'][0]['number']
+            result['phone'] = result['phone'] \
+                .replace('+7', '') \
+                .replace('-', '') \
+                .replace('(', '') \
+                .replace(')', '') \
+                .replace(' ', '')
+            if result['phone'][0] in ['7', '8']:
+                result['phone'] = result['phone'][1:]
             # Имя
             result['name'] = result_dict['contacts']['phones']['value'][0]['comment']
             # Автосалон
