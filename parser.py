@@ -3,7 +3,6 @@ import urllib.error
 from lxml.html import fromstring
 import json
 from multiprocessing.dummy import Pool as ThreadPool
-import pymongo
 import random
 import string
 import time
@@ -17,12 +16,47 @@ import automobile_model
 import price_model
 import cheapened_auto_model
 
+# Загрузка параметров
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'settings.ini'))
+proxies_list = []
+current_proxy = ''
+
+
+def get_proxy_list():
+    """Возвращает список прокси."""
+    global proxies_list
+    if not proxies_list:
+        f = open(config['PROXY']['FileProxyList'])
+        for line in f:
+            if f:
+                proxies_list.append(line)
+    return proxies_list
+
+
+def set_random_proxy():
+    """Устанавливает соединение через случайный прокси."""
+    global current_proxy
+
+    random_proxy = random.choice(get_proxy_list())
+
+    proxy_support = urllib.request.ProxyHandler({
+        'http': random_proxy,
+        'https': random_proxy
+    })
+    opener = urllib.request.build_opener(proxy_support)
+    urllib.request.install_opener(opener)
+    current_proxy = random_proxy
+
 
 def get_auto_data(id_auto):
     """Парсит страницу id_auto и возвращает данные авто в виде словаря."""
     url = site_url_car.format(id_auto)
     data = {}
     try:
+        # Установка случйного прокси, если надо
+        if config['PROXY'].getboolean('UseProxy'):
+            set_random_proxy()
         # Подготовка заголовков запроса
         req = urllib.request.Request(url)
         # Cookie для корректного парсинга по 50 записей со странице, иначе - больше "повторок"
@@ -77,6 +111,9 @@ def get_phone_number(id_auto):
         "params": [{"id": id_auto, "context": "card"}]
     }
 
+    # Установка случйного прокси, если надо
+    if config['PROXY'].getboolean('UseProxy'):
+        set_random_proxy()
     # Подготовка заголовков запроса
     req = urllib.request.Request(site_url_phone)
     req.add_header('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
@@ -134,6 +171,9 @@ def get_phone_number(id_auto):
 
 def get_pages_count():
     """Получение количества страниц с автомобилями"""
+    # Установка случйного прокси, если надо
+    if config['PROXY'].getboolean('UseProxy'):
+        set_random_proxy()
     result_html = urllib.request.urlopen(site_url_ids).read()
     pages_count = int(fromstring(result_html)
                       .find_class('au-pagination__list')
@@ -147,6 +187,9 @@ def get_autos_data_from_table_page(page_num):
     """Получение данных авто из таблицы на определённой странице"""
     res = []
     try:
+        # Установка случйного прокси, если надо
+        if config['PROXY'].getboolean('UseProxy'):
+            set_random_proxy()
         # Подготовка заголовков запроса
         req = urllib.request.Request(site_url_ids + str(page_num))
         # Cookie для корректного парсинга по 50 записей со странице, без такого cookie больше "повторок"
@@ -187,8 +230,8 @@ def get_autos_data_from_table_page(page_num):
             page_num
         ))
     except:
-        print('{}: Неожиданная ошибка при получении данных со страницы № {} с таблицей автомобилей'.format(
-            datetime.now().strftime('%d.%m.%Y %H:%M:%S'), page_num), sys.exc_info()[0]
+        print('{}: Неожиданная ошибка при получении данных со страницы № {} с таблицей автомобилей, proxy: {}'.format(
+            datetime.now().strftime('%d.%m.%Y %H:%M:%S'), page_num, current_proxy), sys.exc_info()[0]
         )
     return res
 
@@ -263,21 +306,10 @@ def parse_auto_to_db(auto_table_data):
 
 if __name__ == '__main__':
     # Загрузка параметров
-    config = configparser.ConfigParser()
-    config.read(os.path.join(os.path.dirname(__file__), 'settings.ini'))
     site_url = config['URLS']['SiteUrl']
     site_url_car = site_url + config['URLS']['SiteUriCar']
     site_url_phone = site_url + config['URLS']['SiteUriPhone']
     site_url_ids = site_url + config['URLS']['SiteUriIds']
-
-    # Установка Proxy
-    if config['PROXY'].getboolean('UseProxy'):
-        proxy_support = urllib.request.ProxyHandler({
-            'http': config['PROXY']['HTTP_PROXY'],
-            'https': config['PROXY']['HTTPS_PROXY']
-        })
-        opener = urllib.request.build_opener(proxy_support)
-        urllib.request.install_opener(opener)
 
     t1 = time.time()
     autos_data_from_table = get_autos_data_from_table(
