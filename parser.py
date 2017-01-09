@@ -87,10 +87,21 @@ def get_auto_data(id_auto):
         for x in characteristics:
             title = x.find_class('au-offer-card__tech-title').pop().find_class('au-offer-card__tech-txt').pop().text
             value = x.find_class('au-offer-card__tech-value').pop().find_class('au-offer-card__tech-txt').pop()
+
             if value.text is None:
-                value = value.find('strong')
+                value_strong = value.find('strong')
+                # Скорее всего это "расход топлива"
+                if value_strong is None:
+                    value_petrol = value.find_class('au-link _spends-block-link').pop()
+                    if value_petrol is not None:
+                        value = value_petrol
+                else:
+                    value = value_strong
             try:
                 data[title] = value.text
+                value_link = value.find_class('au-link _spends-block-link')
+                if value_link:
+                    data[title] += value_link.pop().text
             except AttributeError:
                 data[title] = ''
 
@@ -205,21 +216,21 @@ def get_autos_data_from_table_page(page_num):
 
         result_html = urllib.request.urlopen(req).read()
         parsed_html = fromstring(result_html)
-        tr = parsed_html.find_class('au-elements__item')
+        tr = parsed_html.find_class('au-offers__item')
         for x in tr:
-            auto_id = int(x.find_class('au-elements__title__link_table')
+            auto_id = int(x.find_class('au-offers__item-title')
                           .pop()
                           .attrib
                           .get('href')
                           .split('/')
                           .pop())
-            price = int(x.find_class('au-elements__section-price__cost')
+            price = int(x.find_class('au-offers__item-price')
                         .pop()
                         .text
                         .strip()
                         .replace(u'\xa0', ''))
             try:
-                mileage = x.find_class('au-elements__section-mileage').pop().find('span').text.replace(u'\xa0', '')
+                mileage = x.find_class('au-offers__item-columns-param').pop().find('span').text.replace(u'\xa0', '')
             except AttributeError:
                 mileage = 'нет данных'
             res.append({'auto_id': auto_id, 'price': price, 'mileage': mileage})
@@ -314,7 +325,7 @@ if __name__ == '__main__':
     t1 = time.time()
     autos_data_from_table = get_autos_data_from_table(
         config['THREADS'].getint('ThreadsCountGetIds'),
-        all_pages=True
+        all_pages=False, pages_count=20
     )
     print('{}: Время на получение списка id и цен, элементов: {}, сек.: {}'.format(
         datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
@@ -332,5 +343,5 @@ if __name__ == '__main__':
         time.time() - t1
     ))
 
-    # print(get_auto_data(8064468))
+    # print(get_auto_data(8059410))
     # print(get_phone_number(8059410))
