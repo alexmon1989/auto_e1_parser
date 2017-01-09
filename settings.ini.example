@@ -10,9 +10,12 @@ ThreadsCountGetResults = 10
 
 [PROXY]
 UseProxy = false
-HTTP_PROXY = http://127.0.0.1:80
-HTTPS_PROXY = https://127.0.0.1:80
+FileProxyList = proxies.txt
 
 [DB]
 Host = 127.0.0.1
 Port = 27017
+
+[PARSER]
+AllPages=True
+PagesCount=10

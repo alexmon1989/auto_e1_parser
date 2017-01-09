@@ -325,7 +325,8 @@ if __name__ == '__main__':
     t1 = time.time()
     autos_data_from_table = get_autos_data_from_table(
         config['THREADS'].getint('ThreadsCountGetIds'),
-        all_pages=True
+        config['PARSER'].getboolean('AllPages'),
+        config['PARSER'].getint('PagesCount')
     )
     print('{}: Время на получение списка id и цен, элементов: {}, сек.: {}'.format(
         datetime.now().strftime('%d.%m.%Y %H:%M:%S'),
