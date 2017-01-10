@@ -230,7 +230,13 @@ def get_autos_data_from_table_page(page_num):
                         .strip()
                         .replace(u'\xa0', ''))
             try:
-                mileage = x.find_class('au-offers__item-columns-param').pop().find('span').text.replace(u'\xa0', '')
+                mileage = x.find_class('au-offers__item-columns-param')\
+                    .pop()\
+                    .find('span')\
+                    .text\
+                    .replace(u'\xa0', '')\
+                    .replace('км', '')\
+                    .replace(' ', '')
             except AttributeError:
                 mileage = 'нет данных'
             res.append({'auto_id': auto_id, 'price': price, 'mileage': mileage})
